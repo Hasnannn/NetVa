@@ -1,0 +1,29 @@
+// app.scss
+@import 'variables';
+@import '/node_modules/bootstrap/scss/bootstrap.scss';
+
+body {
+  font-family: 'Poppins', sans-serif;
+  
+}
+
+.btn-login {
+  background-color: $login;
+
+  &:hover {
+    background-color: darken($login, 10%);
+  }
+}
+
+.btn-sub {
+  background-color: $sub;
+}
+
+.btn-my-custom-color {
+  background-color: $my-custom-color;
+  color: #000000;
+
+  &:hover {
+    background-color: darken($my-custom-color, 10%);
+  }
+}

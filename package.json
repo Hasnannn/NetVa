@@ -19,11 +19,13 @@
     "axios": "^1.6.8",
     "bootstrap": "^5.3.3",
     "bootstrap-vue": "^2.23.1",
+    "chart.js": "^4.4.3",
     "nuxt": "^3.12.3",
     "nuxt-app": "file:",
     "sass": "^1.77.6",
     "sass-loader": "^14.2.1",
-    "vue": "latest"
+    "vue": "latest",
+    "vue-chartjs": "^5.3.1"
   },
   "devDependencies": {
     "@types/bootstrap": "^5.2.10"

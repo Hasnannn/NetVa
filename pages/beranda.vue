@@ -1,65 +1,32 @@
 <template>
     <div>
-        <h3 class="fw-bold">Selamat Datang, Aulia Arief</h3>
-        <p>Grafik Bulan Ini =></p>
+        <div class="d-flex justify-content-between align-items-center">
+            <h3 class="fw-bold">Selamat Datang, Aulia Arief</h3>
+            <div>
+                <select v-model="selectedSchool" class="form-select w-auto">
+                    <option v-for="school in schools" :key="school" :value="school">{{ school }}</option>
+                </select>
+            </div>
+        </div>
+        <h6>Grafik Bulan Ini =></h6>
         <div class="row">
-            <div class="col-md-4 mb-4">
+            <div class="col-md-6 mb-4">
                 <div class="card h-100" style="min-height: 300px;">
                     <div class="card-header">
-                        <h5 class="m-0">Grafik Telkom A</h5>
+                        <h5 class="m-0">Work Hours</h5>
                     </div>
                     <div class="card-body">
-                        <p>Telkom A</p>
+                        <WhChart />
                     </div>
                 </div>
             </div>
-            <div class="col-md-4 mb-4">
+            <div class="col-md-6 mb-4">
                 <div class="card h-100" style="min-height: 300px;">
                     <div class="card-header">
-                        <h5 class="m-0">Grafik Telkom B</h5>
+                        <h5 class="m-0">24 Hours</h5>
                     </div>
                     <div class="card-body">
-                        <p>Telkom B</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4 mb-4">
-                <div class="card h-100" style="min-height: 300px;">
-                    <div class="card-header">
-                        <h5 class="m-0">Grafik Telkom C</h5>
-                    </div>
-                    <div class="card-body">
-                        <p>Telkom C</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4 mb-4">
-                <div class="card h-100" style="min-height: 300px;">
-                    <div class="card-header">
-                        <h5 class="m-0">Grafik Telkom D</h5>
-                    </div>
-                    <div class="card-body">
-                        <p>Telkom D</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4 mb-4">
-                <div class="card h-100" style="min-height: 300px;">
-                    <div class="card-header">
-                        <h5 class="m-0">Grafik Telkom E</h5>
-                    </div>
-                    <div class="card-body">
-                        <p>Telkom E</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4 mb-4">
-                <div class="card h-100" style="min-height: 300px;">
-                    <div class="card-header">
-                        <h5 class="m-0">Grafik Telkom F</h5>
-                    </div>
-                    <div class="card-body">
-                        <p>Telkom F</p>
+                        <H24Chart />
                     </div>
                 </div>
             </div>
@@ -67,7 +34,22 @@
     </div>
 </template>
 
-<script setup>
+<script>
+import BarChart from '@/components/h24Chart.vue'
+
+const schools = ['Default', 'Telkom A', 'Telkom B', 'Telkom C'];
+const selectedSchool = ref(schools[0]);
+
+export default {
+    name: 'App',
+    components: { BarChart },
+    data() {
+        return {
+            schools: ['Default', 'Telkom A', 'Telkom B', 'Telkom C', 'Telkom D', 'Telkom E'],
+            selectedSchool: 'Default'
+        }
+    }
+}
 definePageMeta({
     layout: 'home'
 });
@@ -75,10 +57,10 @@ definePageMeta({
 
 <style lang="scss" scoped>
 .card {
-    border: 1px solid #dee2e6; 
+    border: 1px solid #dee2e6;
 }
 
 .card-header {
-    background-color: #f8f9fa; 
+    background-color: #f8f9fa;
 }
 </style>

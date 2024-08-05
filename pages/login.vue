@@ -1,7 +1,7 @@
 <template>
     <div class="container-fluid">
         <div class="row vh-100">
-            <div class="col-12 d-flex align-items-start justify-content-center flex-column bg-primary text-black"
+            <div class="col-12 d-flex align-items-start justify-content-center flex-column bg-primary text-black welcome-section"
                 style="height: 34%;">
                 <div class="welcome-text">
                     <h1>Selamat datang di <br> NetVa</h1>
@@ -12,17 +12,18 @@
                     <h2 class="mb-4">Silahkan Login</h2>
                     <form @submit.prevent="Login">
                         <div class="mb-3 border-bottom border-secondary">
-                            <input type="text" class="form-control" id="nip-input" placeholder="Masukan NIP"
+                            <input type="text" class="form-control masuk" id="nip-input" placeholder="Masukan NIP"
                                 v-model="nip" />
                         </div>
                         <div class="mb-4 border-bottom border-secondary">
-                            <input type="password" class="form-control" id="password-input"
+                            <input type="password" class="form-control masuk" id="password-input"
                                 placeholder="Masukan Password" v-model="password" />
                         </div>
                         <button type="submit" class="btn btn-login text-white" style="width: 100%;"><font-awesome-icon :icon="['fas', 'right-to-bracket']" />  Masuk</button>
                         <div v-if="errorMessage" class="alert alert-danger mt-3">{{ errorMessage }}</div>
                     </form>
                 </div>
+                    <!-- <img src="@/assets/images/image1.jpg" alt="welcome-image"> -->
             </div>
         </div>
     </div>
@@ -68,9 +69,44 @@ export default {
     color: #EEEDEB !important;
 }
 
+// .welcome-text {
+//     margin-left: 125px;
+//     font-family: sans-serif;
+// }
+
 .welcome-text {
     margin-left: 125px;
     font-family: sans-serif;
+    position: relative;
+    z-index: 1;
+    color: white;
+}
+
+// .welcome-section {
+//     background-image: url('@/assets/images/image1.jpg');
+//     background-size: cover;
+//     background-position: center;
+//     background-repeat: no-repeat;
+// }
+
+.welcome-section {
+    position: relative;
+    overflow: hidden;
+}
+
+.welcome-section::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('@/assets/images/image1.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    filter: blur(15px); 
+    z-index: 0;
 }
 
 .login-form {
@@ -79,7 +115,7 @@ export default {
     margin-left: 125px;
 }
 
-.form-control {
+.masuk {
     border:none;
     outline: none;
 }

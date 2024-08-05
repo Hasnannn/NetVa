@@ -10,9 +10,10 @@
   <font-awesome-icon :icon="['fas', 'chevron-left']" />
   <font-awesome-icon :icon="['fas', 'cloud-arrow-up']" />
   <font-awesome-icon :icon="['fas', 'download']" /> -->
+
 </template>
 
-<script setup>
+<script>
 definePageMeta({
     layout: 'login'
 })

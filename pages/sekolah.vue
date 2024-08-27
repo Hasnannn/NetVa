@@ -4,7 +4,7 @@
         <h6>Data Sekolah yang Sudah Terdaftar =></h6>
         <div class="card my-4">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h3 class="m-0 fw-bold">Daftar Sekolah</h3>
+                <h3 class="m-0 fw-bold">Daftar Internet Sekolah</h3>
                 <div class="d-flex align-items-center">
                     <input type="text" class="form-control me-2" placeholder="Search" v-model="searchQuery"
                         style="width: 200px;" />
@@ -18,7 +18,7 @@
                             <li><a class="dropdown-item" href="#" @click="setFilter('Tidak Aktif')">Tidak Aktif</a></li>
                         </div>
                     </div>
-                    <button class="btn btn-success text-white" @click="showModal = true"
+                    <button class="btn btn-success text-white" @click="openModalForAdd"
                         style="width: 130px;"><font-awesome-icon :icon="['fas', 'plus']" />Tambah
                     </button>
                 </div>
@@ -55,7 +55,7 @@
             </div>
         </div>
 
-        <ReusableModal :isVisible="showModal" title="Tambah Sekolah" @close="closeModal" @save="saveSchool">
+        <Modalfix :isVisible="showModal" :title="isEdit ? 'Edit Sekolah' : 'Tambah Sekolah'" @close="closeModal" @save="saveSchool">
             <form @submit.prevent="saveSchool" ref="schoolForm">
                 <div class="mb-4">
                     <label for="schoolName" class="form-label">Nama Sekolah <span class="text-danger">*</span></label>
@@ -103,7 +103,7 @@
                     </button>
                 </div>
             </form>
-        </ReusableModal>
+        </Modalfix>
     </div>
 </template>
 
@@ -113,7 +113,6 @@ definePageMeta({
 });
 
 import { ref, computed } from 'vue';
-import ReusableModal from '@/components/modalfix.vue';
 
 const searchQuery = ref('');
 const filterStatus = ref('');
@@ -150,6 +149,13 @@ const toggleDropdown = () => {
 const setFilter = (status) => {
     filterStatus.value = status;
     dropdownOpen.value = false;
+};
+
+const openModalForAdd = () => {
+    isEdit.value = false;
+    selectedSchool.value = '';
+    internetEntries.value = [{ number: '', status: 'Aktif' }];
+    showModal.value = true;
 };
 
 const closeModal = () => {
@@ -211,6 +217,7 @@ const deleteSchool = (id) => {
 <style scoped>
 .card-header {
     background-color: white;
+    border-radius: 10px;
 }
 
 .table-white {
@@ -230,6 +237,13 @@ const deleteSchool = (id) => {
 .table-responsive {
     max-height: 300px;
     overflow-y: auto;
+}
+
+.table td, .table th {
+    max-width: 90px; /* Atur lebar maksimum kolom */
+    white-space: nowrap; /* Mencegah teks membungkus ke baris berikutnya */
+    overflow: hidden; /* Menyembunyikan teks yang melebihi lebar kolom */
+    text-overflow: ellipsis; /* Menampilkan ellipsis (...) untuk teks yang terlalu panjang */
 }
 
 </style>

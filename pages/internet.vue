@@ -4,10 +4,11 @@
         <h6>Data Internet Sekolah yang Sudah Terdaftar =></h6>
         <div class="card my-4">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h3 class="m-0 fw-bold">Daftar Internet Sekolah</h3>
-                <div class="d-flex align-item-center">
-                    <input type="text" class="form-control me-2" placeholder="Search" v-model="searchQuery" style="width: 200px;"/>
-                    <button class="btn btn-success text-white" @click="showModal = true"
+                <h3 class="m-0 fw-bold">Pengukuran Internet Sekolah</h3>
+                <div class="d-flex align-items-center">
+                    <input type="text" class="form-control me-2" placeholder="Search" v-model="searchQuery"
+                        style="width: 200px;" />
+                    <button class="btn btn-success text-white" @click="openModalForAdd"
                         style="width: 130px;"><font-awesome-icon :icon="['fas', 'plus']" />Tambah
                     </button>
                 </div>
@@ -18,7 +19,7 @@
                         <option v-for="year in years" :key="year" :value="year">{{ year }}</option>
                     </select>
                     <select class="form-select" v-model="selectedMonth">
-                        <option v-for="month in months" :key="month.value" :value="month.value">{{ month.text }}
+                        <option v-for="month in months" :key="month.id" :value="month.id">{{ month.text }}
                         </option>
                     </select>
                 </div>
@@ -54,8 +55,7 @@
             </div>
         </div>
 
-        <Modalfix :isVisible="showModal" title="Tambah Internet Sekolah" @close="showModal = false"
-            @save="saveSchool">
+        <Modalfix :isVisible="showModal" :title="isEdit ? 'Edit Internet Sekolah' : 'Tambah Internet Sekolah'" @close="closeModal" @save="saveSchool">
             <form @submit.prevent="saveSchool" ref="schoolForm">
                 <div class="mb-4">
                     <label for="bulan" class="form-label">
@@ -147,7 +147,7 @@ const months = ref([
 
 const schools = ref([
     { id: 1, name: 'Telkom A', internetNumber: '123456789', workHours: 80, totalHours: 75 },
-    { id: 2, name: 'Telkom B', internetNumber: '123456789', workHours: 90, totalHours: 80 },
+    { id: 2, name: 'Telkom B', internetNumber: '987654321', workHours: 90, totalHours: 80 },
 ]);
 
 const filteredSchools = computed(() => {
@@ -168,34 +168,58 @@ const internetNumber = ref('');
 const workHours = ref('');
 const hours24 = ref('');
 const internetList = ref([]);
+const isEdit = ref(false);
+const currentSchool = ref(null);
+
+const openModalForAdd = () => {
+    isEdit.value = false;
+    selectedSchool.value = '';
+    internetNumber.value = '';
+    workHours.value = '';
+    hours24.value = '';
+    internetList.value = [];
+    showModal.value = true;
+};
+
+const closeModal = () => {
+    showModal.value = false;
+    resetForm();
+};
+
+const resetForm = () => {
+    selectedSchool.value = '';
+    internetNumber.value = '';
+    workHours.value = '';
+    hours24.value = '';
+    internetList.value = [];
+    isEdit.value = false;
+    currentSchool.value = null;
+};
 
 const saveSchool = () => {
     const form = document.querySelector('form');
     if (form.checkValidity()) {
         const newSchool = {
-            id: schools.value.length + 1,
+            id: isEdit.value ? currentSchool.value.id : schools.value.length + 1,
             name: selectedSchool.value,
             internetNumber: internetNumber.value,
             workHours: workHours.value,
             totalHours: hours24.value
         };
 
-
-        schools.value.push(newSchool);
-
-        selectedSchool.value = '';
-        internetNumber.value = '';
-        workHours.value = '';
-        hours24.value = '';
-
+        if (isEdit.value) {
+            const index = schools.value.findIndex(school => school.id === currentSchool.value.id);
+            schools.value[index] = newSchool;
+        } else {
+            schools.value.push(newSchool);
+        }
 
         console.log('School data saved:', newSchool);
-        showModal.value = false;
+        closeModal();
     } else {
         form.reportValidity();
     }
 };
-
 
 const editSchool = (id) => {
     const schoolToEdit = schools.value.find(school => school.id === id);
@@ -204,9 +228,9 @@ const editSchool = (id) => {
         internetNumber.value = schoolToEdit.internetNumber;
         workHours.value = schoolToEdit.workHours;
         hours24.value = schoolToEdit.totalHours;
-        showModal.value = true; // Tampilkan modal
-        isEdit.value = true; // Tandai sebagai mode edit
-        currentSchool.value = schoolToEdit; // Simpan referensi ke sekolah yang sedang diedit
+        showModal.value = true;
+        isEdit.value = true;
+        currentSchool.value = schoolToEdit;
     }
 };
 
@@ -237,8 +261,13 @@ const deleteSchool = (id) => {
 
 .table-responsive {
     max-height: 300px;
-    /* Ganti sesuai kebutuhan */
     overflow-y: auto;
-    /* Scroll vertikal */
+}
+
+.table td, .table th {
+    max-width: 100px; /* Atur lebar maksimum kolom */
+    white-space: nowrap; /* Mencegah teks membungkus ke baris berikutnya */
+    overflow: hidden; /* Menyembunyikan teks yang melebihi lebar kolom */
+    text-overflow: ellipsis; /* Menampilkan ellipsis (...) untuk teks yang terlalu panjang */
 }
 </style>

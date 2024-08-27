@@ -9,10 +9,10 @@
                             <NuxtLink to="/beranda" class="nav-link text-secondary mx-1">Beranda</NuxtLink>
                         </li>
                         <li class="nav-item">
-                            <NuxtLink to="/sekolah" class="nav-link text-secondary mx-1">Sekolah</NuxtLink>
+                            <NuxtLink to="/sekolah" class="nav-link text-secondary mx-1">Internet Sekolah</NuxtLink>
                         </li>
                         <li class="nav-item">
-                            <NuxtLink to="/internet" class="nav-link text-secondary mx-1">Internet Sekolah</NuxtLink>
+                            <NuxtLink to="/internet" class="nav-link text-secondary mx-1">Pengukuran Internet</NuxtLink>
                         </li>
                     </ul>
                 </div>

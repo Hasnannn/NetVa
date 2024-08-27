@@ -196,7 +196,7 @@ const saveSchool = async () => {
                     nomor_internet_sekolah:  entry.number,
                     status_internet_sekolah: entry.status
                 }))
-            };
+            };
 
             if (isEdit.value) {
                 const response = await axios.put(`http://127.0.0.1:8000/api/internet-sekolah/${currentSchool.value.id}`, payload, {
@@ -320,14 +320,5 @@ onMounted(() => {
 .table-responsive {
     max-height: 300px;
     overflow-y: auto;
-}
-
-.table td,
-.table th {
-    max-width: 90px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-
 }
 </style>

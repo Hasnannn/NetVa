@@ -15,8 +15,8 @@
                     <h2 class="mb-4">Silahkan Login</h2>
                     <form @submit.prevent="Login">
                         <div class="mb-3 border-bottom border-secondary">
-                            <input type="text" class="form-control masuk" id="username-input" placeholder="Masukan Username"
-                                v-model="username" />
+                            <input type="text" class="form-control masuk" id="username-input"
+                                placeholder="Masukan Username" v-model="username" />
                         </div>
                         <div class="mb-3 border-bottom border-secondary">
                             <input :type="passwordFieldType" class="form-control masuk" id="password-input"
@@ -64,8 +64,10 @@ export default {
                     username: this.username,
                     password: this.password,
                 });
-                
+
                 if (response.data.token) {
+                    localStorage.setItem('Authorization', response.data.token);
+
                     this.$router.push("/beranda");
                 } else {
                     this.errorMessage = "Username atau Password salah";
@@ -75,6 +77,7 @@ export default {
             }
         },
     },
+
 };
 </script>
 

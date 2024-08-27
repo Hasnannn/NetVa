@@ -8,19 +8,18 @@
                 <div class="d-flex align-items-center">
                     <input type="text" class="form-control me-2" placeholder="Search" v-model="searchQuery"
                         style="width: 200px;" />
-                    <button class="btn btn-success text-white" @click="openModalForAdd"
-                        style="width: 130px;"><font-awesome-icon :icon="['fas', 'plus']" />Tambah
+                    <button class="btn btn-success text-white" @click="openModalForAdd" style="width: 130px;">
+                        <font-awesome-icon :icon="['fas', 'plus']" />Tambah
                     </button>
                 </div>
             </div>
             <div class="card-body p-3 mb-5">
                 <div class="d-flex mb-3">
-                    <select class="form-select me-2" v-model="selectedYear">
+                    <select class="form-select me-2" v-model="selectedYear" @change="fetchData">
                         <option v-for="year in years" :key="year" :value="year">{{ year }}</option>
                     </select>
-                    <select class="form-select" v-model="selectedMonth">
-                        <option v-for="month in months" :key="month.id" :value="month.id">{{ month.text }}
-                        </option>
+                    <select class="form-select" v-model="selectedMonth" @change="fetchData">
+                        <option v-for="month in months" :key="month.id" :value="month.id">{{ month.text }}</option>
                     </select>
                 </div>
                 <div class="table-responsive">
@@ -36,10 +35,10 @@
                         </thead>
                         <tbody>
                             <tr v-for="school in filteredSchools" :key="school.id">
-                                <td>{{ school.name }}</td>
-                                <td>{{ school.internetNumber }}</td>
-                                <td>{{ school.workHours }}%</td>
-                                <td>{{ school.totalHours }}%</td>
+                                <td>{{ school.internet_sekolah.sekolah.nama_sekolah }}</td>
+                                <td>{{ school.internet_sekolah.nomor_internet_sekolah }}</td>
+                                <td>{{ school.data_jam_kerja }}%</td>
+                                <td>{{ school.data_24_jam }}%</td>
                                 <td>
                                     <button class="btn btn-warning btn-sm me-2" @click="editSchool(school.id)">
                                         <font-awesome-icon :icon="['fas', 'pen']" />
@@ -55,7 +54,8 @@
             </div>
         </div>
 
-        <Modalfix :isVisible="showModal" :title="isEdit ? 'Edit Internet Sekolah' : 'Tambah Internet Sekolah'" @close="closeModal" @save="saveSchool">
+        <Modalfix :isVisible="showModal" :title="isEdit ? 'Edit Internet Sekolah' : 'Tambah Internet Sekolah'"
+            @close="closeModal" @save="saveSchool">
             <form @submit.prevent="saveSchool" ref="schoolForm">
                 <div class="mb-4">
                     <label for="bulan" class="form-label">
@@ -82,7 +82,13 @@
                     <label for="internetNumber" class="form-label">
                         Nomor Internet Aktif <span class="text-danger">*</span>
                     </label>
-                    <input type="text" id="internetNumber" v-model="internetNumber" class="form-control" required />
+                    <select id="internetNumber" v-model="selectedInternetNumber" class="form-select" required>
+                        <option disabled value="">Pilih Nomor Internet</option>
+                        <option v-for="school in schools" :key="school.internet_sekolah.id_internet"
+                            :value="school.internet_sekolah.nomor_internet_sekolah">
+                            {{ school.internet_sekolah.nomor_internet_sekolah }}
+                        </option>
+                    </select>
                 </div>
                 <div class="row mb-3">
                     <div class="col-md-6">
@@ -124,7 +130,8 @@ definePageMeta({
     layout: 'home'
 });
 
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import axios from 'axios';
 
 const searchQuery = ref('');
 const selectedYear = ref(new Date().getFullYear());
@@ -145,39 +152,49 @@ const months = ref([
     { id: 12, text: 'Desember' },
 ]);
 
-const schools = ref([
-    { id: 1, name: 'Telkom A', internetNumber: '123456789', workHours: 80, totalHours: 75 },
-    { id: 2, name: 'Telkom B', internetNumber: '987654321', workHours: 90, totalHours: 80 },
-]);
-
-const filteredSchools = computed(() => {
-    return schools.value.filter(school =>
-        school.name.toLowerCase().includes(searchQuery.value.toLowerCase())
-    );
-});
-
+const schools = ref([]);
 const showModal = ref(false);
-const schoolsList = ref([
-    { id: 1, name: 'Telkom A' },
-    { id: 2, name: 'Telkom B' },
-    { id: 3, name: 'Telkom C' },
-]);
-
 const selectedSchool = ref('');
-const internetNumber = ref('');
 const workHours = ref('');
 const hours24 = ref('');
 const internetList = ref([]);
 const isEdit = ref(false);
 const currentSchool = ref(null);
+const selectedInternetNumber = ref('');
+
+
+const filteredSchools = computed(() => {
+    return schools.value.filter(school =>
+        school.internet_sekolah.sekolah.nama_sekolah.toLowerCase().includes(searchQuery.value.toLowerCase())
+    );
+});
+
+const fetchData = async () => {
+    // try {
+    //     const token = localStorage.getItem('Authorization');
+    //     const response = await axios.get('http://127.0.0.1:8000/api/pengukuran-internet', {
+    //         'headers': {
+    //             'Authorization': `Bearer ${token}`
+    //         },
+    //         params: {
+    //             bulan: months.value.find(month => month.id === selectedMonth.value)?.text,
+    //             tahun: selectedYear.value
+    //         }
+    //     });
+
+    //     if (response.data.status === 'success') {
+    //         schools.value = response.data.data;
+    //     }
+    // } catch (error) {
+    //     console.error('Error fetching data:', error);
+    // }
+};
+
+onMounted(fetchData);
 
 const openModalForAdd = () => {
     isEdit.value = false;
-    selectedSchool.value = '';
-    internetNumber.value = '';
-    workHours.value = '';
-    hours24.value = '';
-    internetList.value = [];
+    resetForm();
     showModal.value = true;
 };
 
@@ -188,7 +205,7 @@ const closeModal = () => {
 
 const resetForm = () => {
     selectedSchool.value = '';
-    internetNumber.value = '';
+    selectedInternetNumber.value = '';
     workHours.value = '';
     hours24.value = '';
     internetList.value = [];
@@ -197,41 +214,11 @@ const resetForm = () => {
 };
 
 const saveSchool = () => {
-    const form = document.querySelector('form');
-    if (form.checkValidity()) {
-        const newSchool = {
-            id: isEdit.value ? currentSchool.value.id : schools.value.length + 1,
-            name: selectedSchool.value,
-            internetNumber: internetNumber.value,
-            workHours: workHours.value,
-            totalHours: hours24.value
-        };
-
-        if (isEdit.value) {
-            const index = schools.value.findIndex(school => school.id === currentSchool.value.id);
-            schools.value[index] = newSchool;
-        } else {
-            schools.value.push(newSchool);
-        }
-
-        console.log('School data saved:', newSchool);
-        closeModal();
-    } else {
-        form.reportValidity();
-    }
+    // Implement save logic
 };
 
 const editSchool = (id) => {
-    const schoolToEdit = schools.value.find(school => school.id === id);
-    if (schoolToEdit) {
-        selectedSchool.value = schoolToEdit.name;
-        internetNumber.value = schoolToEdit.internetNumber;
-        workHours.value = schoolToEdit.workHours;
-        hours24.value = schoolToEdit.totalHours;
-        showModal.value = true;
-        isEdit.value = true;
-        currentSchool.value = schoolToEdit;
-    }
+    // Implement edit logic
 };
 
 const deleteSchool = (id) => {
@@ -264,10 +251,15 @@ const deleteSchool = (id) => {
     overflow-y: auto;
 }
 
-.table td, .table th {
-    max-width: 100px; /* Atur lebar maksimum kolom */
-    white-space: nowrap; /* Mencegah teks membungkus ke baris berikutnya */
-    overflow: hidden; /* Menyembunyikan teks yang melebihi lebar kolom */
-    text-overflow: ellipsis; /* Menampilkan ellipsis (...) untuk teks yang terlalu panjang */
+.table td,
+.table th {
+    max-width: 100px;
+    /* Atur lebar maksimum kolom */
+    white-space: nowrap;
+    /* Mencegah teks membungkus ke baris berikutnya */
+    overflow: hidden;
+    /* Menyembunyikan teks yang melebihi lebar kolom */
+    text-overflow: ellipsis;
+    /* Menampilkan ellipsis (...) untuk teks yang terlalu panjang */
 }
 </style>

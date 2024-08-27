@@ -23,5 +23,7 @@ export default {
       baseApiUrl: process.env.NUXT_BASE_API_URL || "",
     },
   },
+
   compatibilityDate: "2024-07-06",
+  modules: ["@pinia/nuxt"]
 };

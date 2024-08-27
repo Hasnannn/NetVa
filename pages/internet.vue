@@ -5,8 +5,8 @@
         <div class="card my-4">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h3 class="m-0 fw-bold">Daftar Internet Sekolah</h3>
-                <div class="d-flex">
-                    <input type="text" class="form-control me-2" placeholder="Search" v-model="searchQuery" />
+                <div class="d-flex align-item-center">
+                    <input type="text" class="form-control me-2" placeholder="Search" v-model="searchQuery" style="width: 200px;"/>
                     <button class="btn btn-success text-white" @click="showModal = true"
                         style="width: 130px;"><font-awesome-icon :icon="['fas', 'plus']" />Tambah
                     </button>
@@ -54,7 +54,7 @@
             </div>
         </div>
 
-        <ReusableModal :isVisible="showModal" title="Tambah Internet Sekolah" @close="showModal = false"
+        <Modalfix :isVisible="showModal" title="Tambah Internet Sekolah" @close="showModal = false"
             @save="saveSchool">
             <form @submit.prevent="saveSchool" ref="schoolForm">
                 <div class="mb-4">
@@ -115,7 +115,7 @@
                     </div>
                 </div>
             </form>
-        </ReusableModal>
+        </Modalfix>
     </div>
 </template>
 
@@ -125,7 +125,6 @@ definePageMeta({
 });
 
 import { ref, computed } from 'vue';
-import ReusableModal from '@/components/modalfix.vue';
 
 const searchQuery = ref('');
 const selectedYear = ref(new Date().getFullYear());
@@ -219,6 +218,7 @@ const deleteSchool = (id) => {
 <style scoped>
 .card-header {
     background-color: white;
+    border-radius: 10px;
 }
 
 .table-white {

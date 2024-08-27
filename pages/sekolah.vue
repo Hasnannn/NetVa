@@ -5,12 +5,24 @@
         <div class="card my-4">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h3 class="m-0 fw-bold">Daftar Sekolah</h3>
-                <div class="d-flex">
-                    <input type="text" class="form-control me-2" placeholder="Search" v-model="searchQuery" />
+                <div class="d-flex align-items-center">
+                    <input type="text" class="form-control me-2" placeholder="Search" v-model="searchQuery"
+                        style="width: 200px;" />
+                    <div class="dropdown me-2">
+                        <button class="btn btn-white" @click="toggleDropdown">
+                            <font-awesome-icon :icon="['fas', 'filter']" />
+                        </button>
+                        <div class="dropdown-menu" :class="{ show: dropdownOpen }">
+                            <li><a class="dropdown-item" href="#" @click="setFilter('')">Semua Status</a></li>
+                            <li><a class="dropdown-item" href="#" @click="setFilter('Aktif')">Aktif</a></li>
+                            <li><a class="dropdown-item" href="#" @click="setFilter('Tidak Aktif')">Tidak Aktif</a></li>
+                        </div>
+                    </div>
                     <button class="btn btn-success text-white" @click="showModal = true"
                         style="width: 130px;"><font-awesome-icon :icon="['fas', 'plus']" />Tambah
                     </button>
                 </div>
+
             </div>
             <div class="card-body p-3 mb-5">
                 <div class="table-responsive">
@@ -68,21 +80,25 @@
                         </label>
                         <div class="d-flex align-items-center">
                             <div class="form-check me-5 mt-2">
-                                <input type="radio" :id="'active-' + index" value="Aktif" v-model="internet.status" class="form-check-input" required />
+                                <input type="radio" :id="'active-' + index" value="Aktif" v-model="internet.status"
+                                    class="form-check-input" required />
                                 <label :for="'active-' + index" class="form-check-label">Aktif</label>
                             </div>
                             <div class="form-check mt-2">
-                                <input type="radio" :id="'inactive-' + index" value="Tidak Aktif" v-model="internet.status" class="form-check-input" required />
+                                <input type="radio" :id="'inactive-' + index" value="Tidak Aktif"
+                                    v-model="internet.status" class="form-check-input" required />
                                 <label :for="'inactive-' + index" class="form-check-label">Tidak Aktif</label>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="d-flex justify-content-center mb-3">
-                    <button type="button" class="btn btn-sub me-2" @click="addInternetEntry" v-if="internetEntries.length < 5"> 
+                    <button type="button" class="btn btn-sub me-2" @click="addInternetEntry"
+                        v-if="internetEntries.length < 5">
                         <font-awesome-icon :icon="['fas', 'plus']" />
                     </button>
-                    <button type="button" class="btn btn-sub" @click="removeInternetEntry" v-if="internetEntries.length > 1"> 
+                    <button type="button" class="btn btn-sub" @click="removeInternetEntry"
+                        v-if="internetEntries.length > 1">
                         <font-awesome-icon :icon="['fas', 'minus']" />
                     </button>
                 </div>
@@ -100,15 +116,19 @@ import { ref, computed } from 'vue';
 import ReusableModal from '@/components/modalfix.vue';
 
 const searchQuery = ref('');
+const filterStatus = ref('');
+const dropdownOpen = ref(false);
 const schools = ref([
     { id: 1, name: 'Telkom A', internetNumbers: [{ number: '123456789', status: 'Aktif' }] },
     { id: 2, name: 'Telkom B', internetNumbers: [{ number: '987654321', status: 'Tidak Aktif' }] },
 ]);
 
 const filteredSchools = computed(() => {
-    return schools.value.filter(school =>
-        school.name.toLowerCase().includes(searchQuery.value.toLowerCase())
-    );
+    return schools.value.filter(school => {
+        const matchesSearch = school.name.toLowerCase().includes(searchQuery.value.toLowerCase());
+        const matchesFilter = filterStatus.value ? school.internetNumbers.some(internet => internet.status === filterStatus.value) : true;
+        return matchesSearch && matchesFilter;
+    });
 });
 
 const showModal = ref(false);
@@ -122,6 +142,15 @@ const selectedSchool = ref('');
 const internetEntries = ref([{ number: '', status: 'Aktif' }]);
 const isEdit = ref(false);
 const currentSchool = ref(null);
+
+const toggleDropdown = () => {
+    dropdownOpen.value = !dropdownOpen.value;
+};
+
+const setFilter = (status) => {
+    filterStatus.value = status;
+    dropdownOpen.value = false;
+};
 
 const closeModal = () => {
     showModal.value = false;
@@ -202,4 +231,5 @@ const deleteSchool = (id) => {
     max-height: 300px;
     overflow-y: auto;
 }
+
 </style>

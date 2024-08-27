@@ -16,7 +16,7 @@
                         <h5 class="m-0">Work Hours</h5>
                     </div>
                     <div class="card-body">
-                        <WhChart />
+                        <Chart :chartData="whData" />
                     </div>
                 </div>
             </div>
@@ -26,7 +26,7 @@
                         <h5 class="m-0">24 Hours</h5>
                     </div>
                     <div class="card-body">
-                        <H24Chart />
+                        <Chart :chartData="h24Data" />
                     </div>
                 </div>
             </div>
@@ -35,18 +35,32 @@
 </template>
 
 <script>
-import BarChart from '@/components/h24Chart.vue'
-
-const schools = ['Default', 'Telkom A', 'Telkom B', 'Telkom C'];
-const selectedSchool = ref(schools[0]);
+import Chart from '@/components/chart';
 
 export default {
-    name: 'App',
-    components: { BarChart },
+    components: { Chart },
     data() {
         return {
             schools: ['Default', 'Telkom A', 'Telkom B', 'Telkom C', 'Telkom D', 'Telkom E'],
-            selectedSchool: 'Default'
+            selectedSchool: 'Default',
+            whData: {
+                labels: ['Telkom A', 'Telkom B', 'Telkom C', 'Telkom D', 'Telkom E'],
+                datasets: [{
+                    label: 'Work Hours',
+                    data: [100, 80, 80, 50, 95],
+                    backgroundColor: ['#EEEDEB', '#E6B9A6', '#939185', '#2F3645', '#EEEDEB'],
+                    borderWidth: 1
+                }]
+            },
+            h24Data: {
+                labels: ['Telkom A', 'Telkom B', 'Telkom C', 'Telkom D', 'Telkom E'],
+                datasets: [{
+                    label: '24 Hours',
+                    data: [60, 85, 50, 100, 95],
+                    backgroundColor: ['#EEEDEB', '#E6B9A6', '#939185', '#2F3645', '#EEEDEB'],
+                    borderWidth: 1
+                }]
+            }
         }
     }
 }
@@ -57,7 +71,7 @@ definePageMeta({
 
 <style lang="scss" scoped>
 .card {
-    border: 1px solid #dee2e6;
+    border: 10px solid #dee2e6;
 }
 
 .card-header {

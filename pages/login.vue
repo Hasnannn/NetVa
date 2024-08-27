@@ -2,55 +2,80 @@
     <div class="container-fluid">
         <div class="row vh-100">
             <div class="col-12 d-flex align-items-start justify-content-center flex-column bg-primary text-black welcome-section"
-                style="height: 34%;">
+                style="height: 34%">
                 <div class="welcome-text">
-                    <h1>Selamat datang di <br> NetVa</h1>
+                    <h1>
+                        Selamat datang di <br />
+                        NetVa
+                    </h1>
                 </div>
             </div>
-            <div class="col d-flex align-items-start justify-content-start" style="height: 50%;">
+            <div class="d-flex align-items-start justify-content-start" style="height: 50%">
                 <div class="login-form w-50 p-4">
                     <h2 class="mb-4">Silahkan Login</h2>
                     <form @submit.prevent="Login">
                         <div class="mb-3 border-bottom border-secondary">
-                            <input type="text" class="form-control masuk" id="nip-input" placeholder="Masukan NIP"
-                                v-model="nip" />
+                            <input type="text" class="form-control masuk" id="username-input" placeholder="Masukan Username"
+                                v-model="username" />
                         </div>
-                        <div class="mb-4 border-bottom border-secondary">
-                            <input type="password" class="form-control masuk" id="password-input"
+                        <div class="mb-3 border-bottom border-secondary">
+                            <input :type="passwordFieldType" class="form-control masuk" id="password-input"
                                 placeholder="Masukan Password" v-model="password" />
                         </div>
-                        <button type="submit" class="btn btn-login text-white" style="width: 100%;"><font-awesome-icon :icon="['fas', 'right-to-bracket']" />  Masuk</button>
-                        <div v-if="errorMessage" class="alert alert-danger mt-3">{{ errorMessage }}</div>
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" type="checkbox" id="show-password" v-model="showPassword">
+                            <label class="form-check-label" for="show-password">
+                                Tampilkan Password
+                            </label>
+                        </div>
+                        <button type="submit" class="btn btn-login text-white" style="width: 100%">
+                            <font-awesome-icon :icon="['fas', 'right-to-bracket']" /> Masuk
+                        </button>
+                        <div v-if="errorMessage" class="alert alert-danger mt-3">
+                            {{ errorMessage }}
+                        </div>
                     </form>
                 </div>
-                    <!-- <img src="@/assets/images/image1.jpg" alt="welcome-image"> -->
             </div>
         </div>
     </div>
 </template>
 
 <script>
+import axios from 'axios';
 export default {
     data() {
         return {
-            nip: '',
-            password: '',
-            errorMessage: ''
+            username: "",
+            password: "",
+            showPassword: false,
+            errorMessage: "",
+        };
+    },
+    computed: {
+        passwordFieldType() {
+            return this.showPassword ? 'text' : 'password';
         }
     },
     methods: {
-        Login() {
-            const validNip = '123';
-            const validPass = '123';
-
-            if (this.nip == validNip && this.password == validPass) {
-                this.$router.push('/beranda');
-            }else {
-                this.errorMessage = 'NIP atau Password salah'
+        async Login() {
+            try {
+                const response = await axios.post('http://127.0.0.1:8000/api/login', {
+                    username: this.username,
+                    password: this.password,
+                });
+                
+                if (response.data.token) {
+                    this.$router.push("/beranda");
+                } else {
+                    this.errorMessage = "Username atau Password salah";
+                }
+            } catch (error) {
+                this.errorMessage = "Terjadi kesalahan saat login. Silakan coba lagi.";
             }
-        }
-    }
-}
+        },
+    },
+};
 </script>
 
 <style lang="scss">
@@ -62,17 +87,8 @@ export default {
 }
 
 .bg-primary {
-    background-color: #D9D9D9 !important;
+    background-color: #d9d9d9 !important;
 }
-
-.text-white {
-    color: #EEEDEB !important;
-}
-
-// .welcome-text {
-//     margin-left: 125px;
-//     font-family: sans-serif;
-// }
 
 .welcome-text {
     margin-left: 125px;
@@ -81,13 +97,6 @@ export default {
     z-index: 1;
     color: white;
 }
-
-// .welcome-section {
-//     background-image: url('@/assets/images/image1.jpg');
-//     background-size: cover;
-//     background-position: center;
-//     background-repeat: no-repeat;
-// }
 
 .welcome-section {
     position: relative;
@@ -101,11 +110,11 @@ export default {
     left: 0;
     width: 100%;
     height: 100%;
-    background-image: url('@/assets/images/image1.jpg');
+    background-image: url("@/assets/images/image1.jpg");
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    filter: blur(15px); 
+    filter: blur(15px);
     z-index: 0;
 }
 
@@ -116,7 +125,7 @@ export default {
 }
 
 .masuk {
-    border:none;
+    border: none;
     outline: none;
 }
 </style>

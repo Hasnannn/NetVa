@@ -8,19 +8,18 @@
                 <div class="d-flex align-items-center">
                     <input type="text" class="form-control me-2" placeholder="Search" v-model="searchQuery"
                         style="width: 200px;" />
-                    <button class="btn btn-success text-white" @click="openModalForAdd"
-                        style="width: 130px;"><font-awesome-icon :icon="['fas', 'plus']" />Tambah
+                    <button class="btn btn-success text-white" @click="openModalForAdd" style="width: 130px;">
+                        <font-awesome-icon :icon="['fas', 'plus']" />Tambah
                     </button>
                 </div>
             </div>
             <div class="card-body p-3 mb-5">
                 <div class="d-flex mb-3">
-                    <select class="form-select me-2" v-model="selectedYear">
+                    <select class="form-select me-2" v-model="selectedYear" @change="fetchData">
                         <option v-for="year in years" :key="year" :value="year">{{ year }}</option>
                     </select>
-                    <select class="form-select" v-model="selectedMonth">
-                        <option v-for="month in months" :key="month.id" :value="month.id">{{ month.text }}
-                        </option>
+                    <select class="form-select" v-model="selectedMonth" @change="fetchData">
+                        <option v-for="month in months" :key="month.id" :value="month.id">{{ month.text }}</option>
                     </select>
                 </div>
                 <div class="table-responsive">
@@ -36,10 +35,10 @@
                         </thead>
                         <tbody>
                             <tr v-for="school in filteredSchools" :key="school.id">
-                                <td>{{ school.name }}</td>
-                                <td>{{ school.internetNumber }}</td>
-                                <td>{{ school.workHours }}%</td>
-                                <td>{{ school.totalHours }}%</td>
+                                <td>{{ school.internet_sekolah.sekolah.nama_sekolah }}</td>
+                                <td>{{ school.internet_sekolah.nomor_internet_sekolah }}</td>
+                                <td>{{ school.data_jam_kerja }}%</td>
+                                <td>{{ school.data_24_jam }}%</td>
                                 <td>
                                     <button class="btn btn-warning btn-sm me-2" @click="editSchool(school.id)">
                                         <font-awesome-icon :icon="['fas', 'pen']" />
@@ -75,7 +74,8 @@
                     </label>
                     <select id="schoolName" v-model="selectedSchool" class="form-select" required>
                         <option disabled value="">Pilih Sekolah</option>
-                        <option v-for="school in schoolsList" :key="school.id" :value="school.name">{{ school.name }}
+                        <option v-for="school in schoolsList" :key="school.id" :value="school.nama_sekolah">
+                            {{ school.nama_sekolah }}
                         </option>
                     </select>
                 </div>
@@ -85,8 +85,8 @@
                     </label>
                     <select id="internetNumber" v-model="selectedInternetNumber" class="form-select" required>
                         <option disabled value="">Pilih Nomor Internet</option>
-                        <option v-for="school in schools" :key="school.internet_sekolah.id_internet"
-                            :value="school.internet_sekolah.nomor_internet_sekolah">
+                        <option v-for="school in schools" :key="school.internet_sekolah.id_internet" 
+                        :value="school.internet_sekolah.nomor_internet_sekolah">
                             {{ school.internet_sekolah.nomor_internet_sekolah }}
                         </option>
                     </select>
@@ -131,11 +131,12 @@ definePageMeta({
     layout: 'home'
 });
 
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import axios from 'axios';
 
 const searchQuery = ref('');
 const selectedYear = ref(new Date().getFullYear());
-const selectedMonth = ref(new Date().getMonth() + 1);
+const selectedMonth = ref(new Date().getMonth());
 const years = ref([2024, 2023, 2022, 2021]);
 const months = ref([
     { id: 1, text: 'Januari' },
@@ -152,39 +153,69 @@ const months = ref([
     { id: 12, text: 'Desember' },
 ]);
 
-const schools = ref([
-    { id: 1, name: 'Telkom A', internetNumber: '123456789', workHours: 80, totalHours: 75 },
-    { id: 2, name: 'Telkom B', internetNumber: '987654321', workHours: 90, totalHours: 80 },
-]);
-
-const filteredSchools = computed(() => {
-    return schools.value.filter(school =>
-        school.name.toLowerCase().includes(searchQuery.value.toLowerCase())
-    );
-});
-
+const schools = ref([]);
+const schoolsList = ref([]);
 const showModal = ref(false);
-const schoolsList = ref([
-    { id: 1, name: 'Telkom A' },
-    { id: 2, name: 'Telkom B' },
-    { id: 3, name: 'Telkom C' },
-]);
-
-const selectedInternetNumber = ref('');
 const selectedSchool = ref('');
 const workHours = ref('');
 const hours24 = ref('');
 const internetList = ref([]);
 const isEdit = ref(false);
 const currentSchool = ref(null);
+const selectedInternetNumber = ref('');
+
+
+const filteredSchools = computed(() => {
+    return schools.value.filter(school =>
+        school.internet_sekolah.sekolah.nama_sekolah.toLowerCase().includes(searchQuery.value.toLowerCase())
+    );
+});
+
+const fetchData = async () => {
+    try {
+        const token = localStorage.getItem('Authorization');
+        const responseSchools = await axios.get('http://127.0.0.1:8000/api/sekolah', {
+            'headers': {
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+
+        const response = await axios.get('http://127.0.0.1:8000/api/pengukuran-internet', {
+            'headers': {
+                'Authorization': `Bearer ${token}`
+            },
+            params: {
+                bulan: months.value.find(month => month.id === selectedMonth.value)?.text,
+                tahun: selectedYear.value
+            }
+        });
+        
+        // const responseInternet = await axios.get('http://127.0.0.1:8000/api/internet-sekolah', {
+        //     'headers': {
+        //         'Authorization': `Bearer ${token}`,
+        //     },
+        // });
+        if (response.data.status === 'success') {
+            schools.value = response.data.data;
+        }
+        schoolsList.value = responseSchools.data.data[0];
+        // schoolsList.value = schoolsList.value.map((val_sek) => ({
+        //     ...val_sek,
+        //     'nomor_sekolah': responseInternet.data.data
+        //         .filter((val_int) => val_int.sekolah.id_sekolah === val_sek.id)
+        //         .map((val_int) => ({
+        //             id : val_int.id,
+        //             nomor : val_int.nomor_internet_sekolah
+        //         }))
+        // }))
+    } catch (error) {
+        console.error('Error fetching data:', error);
+    }
+};
 
 const openModalForAdd = () => {
     isEdit.value = false;
-    selectedSchool.value = '';
-    selectedInternetNumber = ref('');
-    workHours.value = '';
-    hours24.value = '';
-    internetList.value = [];
+    resetForm();
     showModal.value = true;
 };
 
@@ -195,7 +226,7 @@ const closeModal = () => {
 
 const resetForm = () => {
     selectedSchool.value = '';
-    selectedInternetNumber = ref('');
+    selectedInternetNumber.value = '';
     workHours.value = '';
     hours24.value = '';
     internetList.value = [];
@@ -209,7 +240,7 @@ const saveSchool = () => {
         const newSchool = {
             id: isEdit.value ? currentSchool.value.id : schools.value.length + 1,
             name: selectedSchool.value,
-            internetNumber: internetNumber.value,
+            internetNumber: selectedInternetNumber.value,
             workHours: workHours.value,
             totalHours: hours24.value
         };
@@ -232,7 +263,7 @@ const editSchool = (id) => {
     const schoolToEdit = schools.value.find(school => school.id === id);
     if (schoolToEdit) {
         selectedSchool.value = schoolToEdit.name;
-        internetNumber.value = schoolToEdit.internetNumber;
+        selectedInternetNumber.value = schoolToEdit.internetNumber;
         workHours.value = schoolToEdit.workHours;
         hours24.value = schoolToEdit.totalHours;
         showModal.value = true;
@@ -244,6 +275,10 @@ const editSchool = (id) => {
 const deleteSchool = (id) => {
     schools.value = schools.value.filter(school => school.id !== id);
 };
+
+onMounted(() => {
+    fetchData();
+});
 </script>
 
 <style scoped>
@@ -270,4 +305,5 @@ const deleteSchool = (id) => {
     max-height: 300px;
     overflow-y: auto;
 }
+
 </style>

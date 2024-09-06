@@ -46,13 +46,15 @@
                                     <button class="btn btn-danger btn-sm me-2" @click="deleteSchool(school.id)">
                                         <font-awesome-icon :icon="['fas', 'trash']" />
                                     </button>
-                                    <button class="btn btn-primary btn-sm">
-                                        <font-awesome-icon :icon="['fas', 'circle-down']" />
-                                    </button>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
+                </div>
+                <div class="d-flex justify-content-center mt-4">
+                    <button class="btn btn-primary">
+                        <font-awesome-icon :icon="['fas', 'circle-down']" /> Export
+                    </button>
                 </div>
             </div>
         </div>

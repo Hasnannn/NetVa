@@ -52,7 +52,7 @@
                     </table>
                 </div>
                 <div class="d-flex justify-content-center mt-4">
-                    <button class="btn btn-primary">
+                    <button class="btn btn-primary" @click="exportData">
                         <font-awesome-icon :icon="['fas', 'circle-down']" /> Export
                     </button>
                 </div>
@@ -169,6 +169,30 @@ const selectedInternetNumber = ref('');
 const selectedSchoolId = ref('');
 const internetNumbers = ref([]);
 
+const exportData = () => {
+    const bulan = months.value.find(month => month.id === selectedMonth.value)?.text;
+    const tahun = selectedYear.value;
+    const token = localStorage.getItem('Authorization');
+
+    const url = `http://127.0.0.1:8000/api/pengukuran-internet/export?tahun=${tahun}&bulan=${bulan}`;
+    axios.get(url, {
+        'responseType': 'blob',
+        'headers': {
+            'Authorization': `Bearer ${token}`
+        }
+    }).then(response => {
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `Data_Internet_Sekolah_${bulan}_${tahun}.xlsx`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }).catch(error => {
+        console.error('Error exporting data:', error);
+        alert('Gagal mendownload data.');
+    });
+};
 
 const filteredSchools = computed(() => {
     return schools.value.filter(school => {

@@ -3,8 +3,11 @@
         <div class="d-flex justify-content-between align-items-center">
             <h3 class="fw-bold">Selamat Datang, Aulia Arief</h3>
             <div>
-                <select v-model="selectedSchool" class="form-select w-auto">
-                    <option v-for="school in schools" :key="school" :value="school">{{ school }}</option>
+                <select id="schoolName" v-model="selectedSchool" class="form-select" required>
+                    <option disabled value="">Pilih Sekolah</option>
+                    <option v-for="school in schoolsList" :key="school.id" :value="school.nama_sekolah">
+                        {{ school.nama_sekolah }}
+                    </option>
                 </select>
             </div>
         </div>
@@ -36,34 +39,78 @@
 
 <script>
 import Chart from '@/components/chart';
+import axios from 'axios';
 
 export default {
     components: { Chart },
     data() {
         return {
-            schools: ['Default', 'Telkom A', 'Telkom B', 'Telkom C', 'Telkom D', 'Telkom E'],
-            selectedSchool: 'Default',
+            schools: [],
+            selectedSchool: null,
             whData: {
-                labels: ['Telkom A', 'Telkom B', 'Telkom C', 'Telkom D', 'Telkom E'],
+                labels: ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'],
                 datasets: [{
                     label: 'Work Hours',
-                    data: [100, 80, 80, 50, 95],
+                    data: [],
                     backgroundColor: ['#EEEDEB', '#E6B9A6', '#939185', '#2F3645', '#EEEDEB'],
                     borderWidth: 1
                 }]
             },
             h24Data: {
-                labels: ['Telkom A', 'Telkom B', 'Telkom C', 'Telkom D', 'Telkom E'],
+                labels: ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'],
                 datasets: [{
                     label: '24 Hours',
-                    data: [60, 85, 50, 100, 95],
+                    data: [],
                     backgroundColor: ['#EEEDEB', '#E6B9A6', '#939185', '#2F3645', '#EEEDEB'],
                     borderWidth: 1
                 }]
             }
+        };
+    },
+    mounted() {
+        this.fetchSchools();
+    },
+    methods: {
+        async fetchSchools() {
+            try {
+                const token = localStorage.getItem('Authorization');
+                const response = await axios.get('http://127.0.0.1:8000/api/pengukuran-internet?bulan=Juli&tahun=2024', {
+                    'headers': {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+                if (response.data.status === 'success') {
+                    this.schools = response.data.data;
+                }
+            } catch (error) {
+                console.error('Error fetching schools:', error);
+            }
+        },
+        async updateGraphData() {
+            try {
+                if (!this.selectedSchool) return;
+                const token = localStorage.getItem('Authorization');
+                const response = await axios.get('http://127.0.0.1:8000/api/data-internet', {
+                    'headers': {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                    params: {
+                        school_id: this.selectedSchool.id,
+                    }
+                });
+
+                if (response.data.status === 'success') {
+                    const data = response.data.data;
+                    this.whData.datasets[0].data = data.work_hours;
+                    this.h24Data.datasets[0].data = data.hours_24;
+                }
+            } catch (error) {
+                console.error('Error fetching graph data:', error);
+            }
         }
     }
-}
+};
+
 definePageMeta({
     layout: 'home'
 });

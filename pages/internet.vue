@@ -37,14 +37,17 @@
                             <tr v-for="school in filteredSchools" :key="school.id">
                                 <td>{{ school.internet_sekolah.sekolah.nama_sekolah }}</td>
                                 <td>{{ school.internet_sekolah.nomor_internet_sekolah }}</td>
-                                <td>{{ school.data_jam_kerja }}%</td>
-                                <td>{{ school.data_24_jam }}%</td>
+                                <td>{{ parseInt(school.data_jam_kerja) }}%</td>
+                                <td>{{ parseInt(school.data_24_jam) }}%</td>
                                 <td>
                                     <button class="btn btn-warning btn-sm me-2" @click="editSchool(school.id)">
                                         <font-awesome-icon :icon="['fas', 'pen']" />
                                     </button>
-                                    <button class="btn btn-danger btn-sm" @click="deleteSchool(school.id)">
+                                    <button class="btn btn-danger btn-sm me-2" @click="deleteSchool(school.id)">
                                         <font-awesome-icon :icon="['fas', 'trash']" />
+                                    </button>
+                                    <button class="btn btn-primary btn-sm">
+                                        <font-awesome-icon :icon="['fas', 'circle-down']" />
                                     </button>
                                 </td>
                             </tr>
@@ -72,22 +75,23 @@
                     <label for="schoolName" class="form-label">
                         Nama Sekolah <span class="text-danger">*</span>
                     </label>
-                    <select id="schoolName" v-model="selectedSchool" class="form-select" required>
+                    <select id="schoolName" v-model="selectedSchoolId" class="form-select" required>
                         <option disabled value="">Pilih Sekolah</option>
-                        <option v-for="school in schoolsList" :key="school.id" :value="school.nama_sekolah">
+                        <option v-for="school in schoolsList" :key="school.id" :value="school.id">
                             {{ school.nama_sekolah }}
                         </option>
                     </select>
                 </div>
+
                 <div class="mb-4">
                     <label for="internetNumber" class="form-label">
                         Nomor Internet Aktif <span class="text-danger">*</span>
                     </label>
                     <select id="internetNumber" v-model="selectedInternetNumber" class="form-select" required>
                         <option disabled value="">Pilih Nomor Internet</option>
-                        <option v-for="school in schools" :key="school.internet_sekolah.id_internet" 
-                        :value="school.internet_sekolah.nomor_internet_sekolah">
-                            {{ school.internet_sekolah.nomor_internet_sekolah }}
+                        <option v-for="internet in internetNumbers" :key="internet.id"
+                            :value="internet.nomor_internet_sekolah">
+                            {{ internet.nomor_internet_sekolah }}
                         </option>
                     </select>
                 </div>
@@ -97,21 +101,19 @@
                             Work Hours (Tanpa %) <span class="text-danger">*</span>
                         </label>
                         <input type="text" id="workHours" v-model="workHours" class="form-control" required />
-                        <button type="button" class="btn btn-primary mt-4 w-100">
-                            <font-awesome-icon :icon="['fas', 'cloud-arrow-up']" /> Import Dari Excel
-                        </button>
                     </div>
                     <div class="col-md-6">
                         <label for="hours24" class="form-label">
                             24 Hours (tanpa %) <span class="text-danger">*</span>
                         </label>
                         <input type="text" id="hours24" v-model="hours24" class="form-control" required />
+                    </div>
+                    <div>
                         <button type="button" class="btn btn-primary mt-4 w-100">
-                            <font-awesome-icon :icon="['fas', 'circle-down']" /> Unduh Format Excel
+                            <font-awesome-icon :icon="['fas', 'cloud-arrow-up']" /> Import Dari Excel
                         </button>
                     </div>
                 </div>
-
                 <div v-for="(internet, index) in internetList" :key="index" class="row mb-3">
                     <div class="col-md-6">
                         <label class="form-label">
@@ -136,7 +138,7 @@ import axios from 'axios';
 
 const searchQuery = ref('');
 const selectedYear = ref(new Date().getFullYear());
-const selectedMonth = ref(new Date().getMonth());
+const selectedMonth = ref(new Date().getMonth() + 1);
 const years = ref([2024, 2023, 2022, 2021]);
 const months = ref([
     { id: 1, text: 'Januari' },
@@ -156,19 +158,22 @@ const months = ref([
 const schools = ref([]);
 const schoolsList = ref([]);
 const showModal = ref(false);
-const selectedSchool = ref('');
 const workHours = ref('');
 const hours24 = ref('');
 const internetList = ref([]);
 const isEdit = ref(false);
 const currentSchool = ref(null);
 const selectedInternetNumber = ref('');
+const selectedSchoolId = ref('');
+const internetNumbers = ref([]);
 
 
 const filteredSchools = computed(() => {
-    return schools.value.filter(school =>
-        school.internet_sekolah.sekolah.nama_sekolah.toLowerCase().includes(searchQuery.value.toLowerCase())
-    );
+    return schools.value.filter(school => {
+        return school.internet_sekolah &&
+            school.bulan === months.value.find(month => month.id === selectedMonth.value)?.text &&
+            school.tahun_berjalan === selectedYear.value;
+    });
 });
 
 const fetchData = async () => {
@@ -184,97 +189,141 @@ const fetchData = async () => {
             'headers': {
                 'Authorization': `Bearer ${token}`
             },
-            params: {
-                bulan: months.value.find(month => month.id === selectedMonth.value)?.text,
-                tahun: selectedYear.value
+            'params': {
+                'bulan': months.value.find(month => month.id === selectedMonth.value)?.text,
+                'tahun': selectedYear.value
             }
         });
-        
-        // const responseInternet = await axios.get('http://127.0.0.1:8000/api/internet-sekolah', {
-        //     'headers': {
-        //         'Authorization': `Bearer ${token}`,
-        //     },
-        // });
+
         if (response.data.status === 'success') {
             schools.value = response.data.data;
         }
         schoolsList.value = responseSchools.data.data[0];
-        // schoolsList.value = schoolsList.value.map((val_sek) => ({
-        //     ...val_sek,
-        //     'nomor_sekolah': responseInternet.data.data
-        //         .filter((val_int) => val_int.sekolah.id_sekolah === val_sek.id)
-        //         .map((val_int) => ({
-        //             id : val_int.id,
-        //             nomor : val_int.nomor_internet_sekolah
-        //         }))
-        // }))
     } catch (error) {
         console.error('Error fetching data:', error);
     }
 };
 
+const fetchInternetNumbers = async (schoolId) => {
+    try {
+        const token = localStorage.getItem('Authorization');
+        const response = await axios.get(`http://127.0.0.1:8000/api/internet-sekolah/internet-sekolah-aktif/${schoolId}`, {
+            'headers': {
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+        if (response.data.status === 'success') {
+            internetNumbers.value = response.data.data;
+        }
+    } catch (error) {
+        console.error('Error fetching internet numbers:', error);
+    }
+};
+
+watch(selectedSchoolId, (newSchoolId) => {
+    if (newSchoolId) {
+        fetchInternetNumbers(newSchoolId);
+    } else {
+        internetNumbers.value = [];
+    }
+});
+
 const openModalForAdd = () => {
-    isEdit.value = false;
     resetForm();
     showModal.value = true;
+    isEdit.value = false;
 };
 
 const closeModal = () => {
     showModal.value = false;
-    resetForm();
 };
 
 const resetForm = () => {
-    selectedSchool.value = '';
+    selectedSchoolId.value = '';
     selectedInternetNumber.value = '';
     workHours.value = '';
     hours24.value = '';
-    internetList.value = [];
-    isEdit.value = false;
-    currentSchool.value = null;
 };
 
-const saveSchool = () => {
+const saveSchool = async () => {
     const form = document.querySelector('form');
     if (form.checkValidity()) {
-        const newSchool = {
-            id: isEdit.value ? currentSchool.value.id : schools.value.length + 1,
-            name: selectedSchool.value,
-            internetNumber: selectedInternetNumber.value,
-            workHours: workHours.value,
-            totalHours: hours24.value
-        };
+        try {
+            const token = localStorage.getItem('Authorization');
+            const payload = {
+                'id_internet': internetNumbers.value.find(internet => internet.nomor_internet_sekolah === selectedInternetNumber.value)?.id,
+                'bulan': months.value.find(month => month.id === selectedMonth.value)?.text,
+                'data_jam_kerja': workHours.value,
+                'data_24_jam': hours24.value,
+            };
 
-        if (isEdit.value) {
-            const index = schools.value.findIndex(school => school.id === currentSchool.value.id);
-            schools.value[index] = newSchool;
-        } else {
-            schools.value.push(newSchool);
+            if (isEdit.value) {
+                const response = await axios.put(`http://127.0.0.1:8000/api/pengukuran-internet/${currentSchool.value.id}`, payload, {
+                    'headers': {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+                if (response.data.status === 'success') {
+                    alert(response.data.message);
+                    fetchData();
+                    closeModal();
+                } else {
+                    console.error('Gagal memperbarui data:', response.data);
+                }
+            } else {
+                const response = await axios.post('http://127.0.0.1:8000/api/pengukuran-internet', payload, {
+                    'headers': {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+                if (response.data.status === 'success') {
+                    alert(response.data.message);
+                    fetchData();
+                    closeModal();
+                } else {
+                    console.error('Gagal menambahkan data:', response.data);
+                }
+            }
+        } catch (error) {
+            console.error('Error saving data:', error);
         }
-
-        console.log('School data saved:', newSchool);
-        closeModal();
-    } else {
-        form.reportValidity();
     }
 };
 
 const editSchool = (id) => {
     const schoolToEdit = schools.value.find(school => school.id === id);
     if (schoolToEdit) {
-        selectedSchool.value = schoolToEdit.name;
-        selectedInternetNumber.value = schoolToEdit.internetNumber;
-        workHours.value = schoolToEdit.workHours;
-        hours24.value = schoolToEdit.totalHours;
+        selectedSchoolId.value = schoolToEdit.internet_sekolah.sekolah.id;
+        selectedInternetNumber.value = schoolToEdit.internet_sekolah.nomor_internet_sekolah;
+        selectedMonth.value = months.value.find(month => month.text === schoolToEdit.bulan)?.id;
+        workHours.value = schoolToEdit.data_jam_kerja;
+        hours24.value = schoolToEdit.data_24_jam;
         showModal.value = true;
         isEdit.value = true;
         currentSchool.value = schoolToEdit;
     }
 };
 
-const deleteSchool = (id) => {
-    schools.value = schools.value.filter(school => school.id !== id);
+const deleteSchool = async (id) => {
+    try {
+        const token = localStorage.getItem('Authorization');
+        const response = await axios.delete(`http://127.0.0.1:8000/api/pengukuran-internet/${id}`, {
+            'headers': {
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+        if (response.data.status === 'success') {
+            schools.value = schools.value.filter(school => school.id !== id);
+            alert(response.data.message);
+        } else {
+            console.error('Gagal menghapus data:', response.data);
+        }
+    } catch (error) {
+        console.error('Error deleting data:', error);
+        alert('Terjadi kesalahan saat menghapus data');
+    }
 };
+
 
 onMounted(() => {
     fetchData();
@@ -305,5 +354,4 @@ onMounted(() => {
     max-height: 300px;
     overflow-y: auto;
 }
-
 </style>

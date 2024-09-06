@@ -257,9 +257,8 @@ const deleteSchool = async (id) => {
         });
 
         if (response.data.status === 'success') {
-            // Hapus data dari frontend setelah berhasil dihapus dari backend
             schools.value = schools.value.filter(school => school.id !== id);
-            alert(response.data.message); // Tampilkan pesan sukses
+            alert(response.data.message);
         } else {
             alert('Gagal menghapus data');
         }
